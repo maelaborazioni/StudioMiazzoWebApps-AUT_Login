@@ -1,0 +1,7 @@
+firstFormID:"6F2FB306-E2FC-4413-95B0-FAD7069BF267",
+i18nDataSource:"db:/svy_framework/i18n_messages",
+modulesNames:"utility,AUT_Shared,MA_Shared,AUT_Authenticate",
+onOpenMethodID:"2B428826-2713-4FC6-A0FB-2C9705FF3287",
+titleText:"i18n:svy.fr.lbl.login",
+typeid:43,
+uuid:"90AAC585-57DD-4584-9ED5-05EF29C330C4"
