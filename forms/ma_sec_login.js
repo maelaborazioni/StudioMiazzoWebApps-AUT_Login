@@ -577,7 +577,7 @@ function onAction$btn_recupera_password(event)
 			var mailAddress = fs.getSelectedRecord().com_email;
 			if(mailAddress && plugins.mail.isValidEmailAddress(mailAddress))
 			{
-				var properties = globals.setSendGridSmtpProperties();
+				var properties = globals.setSparkPostSmtpProperties();
 				var subject = "Presenza Semplice Studio Miazzo - Comunicazione nuova password per accesso all\'applicativo";
 				var userName = recUser.name_first_names && recUser.name_last ? recUser.name_first_names + " " + recUser.name_last : recUser.user_name
 				var msgText = msgText += "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head>";
