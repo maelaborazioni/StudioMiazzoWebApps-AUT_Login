@@ -40,7 +40,7 @@ function onLoad(event)
  */
 function onActionBntLogin(event)
 {
-	var params = {
+    var params = {
         processFunction: process_login,
         message: '', 
         opacity: 0.5,
@@ -52,7 +52,8 @@ function onActionBntLogin(event)
         fontType: 'Arial,4,25',
         processArgs: [event]
     };
-	plugins.busy.block(params);
+	
+    plugins.busy.block(params);
 }
 
 /**
@@ -60,6 +61,9 @@ function onActionBntLogin(event)
  */
 function process_login()
 {
+	if(application.isInDeveloper())
+		autoLoginDeveloper();
+	
 	if(globals.is_cas_authenticated)
 		loginWithCAS();
 	else
@@ -327,141 +331,7 @@ function loginWithCasId(userid,ownerid)
 	// TODO 
 }
 
-/**
- * @properties={typeid:24,uuid:"B5015AB8-C9C2-44A1-ACD8-4536BF0AACB1"}
- */
-function loginWithCasStd(username,password,owner,organization)
-{
-	vUsername = username;
-	vPassword = password;
-	vOwner = owner;
-	vOrganization = organization;
-	
-	//check if user name and password are entered
-	if((!vUsername) || (!vPassword) || (!vOwner))
-	{
-		globals.ma_utl_showErrorDialog(i18n.getI18NMessage('svy.fr.dlg.username_password_entered'),'Login');
-		return
-	}
-	
-	if(vOrganization && !vGroup)
-	{
-		globals.ma_utl_showErrorDialog(i18n.getI18NMessage('ma.aut.msg.group_not_entered'),'Login');
-		return;
-	}
-	
-	if (!vFirstLoginAttempt) {
-		vFirstLoginAttempt = new Date();
-	}	
-	
-	//user is already choosing organization
-	if(vUser_id && vOrganization)
-	{	
-		//login the organization
-		loginWithOrganization();
-		return;
-	}	
 
-	// Call authentication module/method, authentication is done on server not on the client.
-	var _authObj = new Object()
-	_authObj.username = vUsername
-	_authObj.password = vPassword
-	_authObj.owner = vOwner
-	_authObj.firstLoginAttempt = vFirstLoginAttempt
-	_authObj.lastLoginAttempt = vLastLoginAttempt
-	_authObj.framework_db = vFramework_db
-	
-	/** @type {{owner_id:String,user_id:String,error:String, success:Boolean}} */
-	var _return = security.authenticate('svy_sec_authenticate', 'svy_sec_checkUserPassword',[_authObj])
-	if(_return.success)
-	{
-		// set user id
-		globals.svy_sec_lgn_user_id = _return.user_id
-		
-		// set owner id
-		globals.svy_sec_lgn_owner_id = _return.owner_id
-		
-		// check whether the owner can access this solution
-		if (!isOwnerEnabled())
-		{
-			globals.ma_utl_logError('i18n:ma.psl.err.auth.user_not_enabled', LOGGINGLEVEL.FATAL);
-			globals.ma_utl_showErrorDialog(i18n.getI18NMessage('ma.psl.err.auth.user_not_enabled'),'Login');
-			
-			return;
-		}
-
-		// TODO go on from here ----------------------------------------------------------------
-		
-		// get organizations, if there are multiple organizations for this user he has to choose his organization
-		/** @type {JSDataSet} */
-		var _dat_org =  security.authenticate('svy_sec_authenticate', 'svy_sec_getOrganizations', [_return.user_id, _return.owner_id, vFramework_db])
-
-		// set organization valuelist
-		vUser_id = _return.user_id
-		if(_dat_org.getMaxRowIndex() == 1)
-		{
-			vOrganization = _dat_org.getValue(1,2);
-			setGroupValueList(null, vOrganization);
-			loginWithOrganization();
-		    return;
-		}
-		else
-		{
-			application.setValueListItems('svy_sec_lgn_organizations',_dat_org,true)
-			elements.lbl_organization.visible = true
-			elements.fld_organization.visible = true
-		}
-		
-		/**
-		 * Retrieve the stored organization only if it's the same owner
-		 */
-		if(vOwner === application.getUserProperty(application.getSolutionName() +'.ownername'))
-		{
-			// enter the organization id
-			if(application.getUserProperty(application.getSolutionName() +'.organization')
-				&& _dat_org.getColumnAsArray(2).indexOf(application.getUserProperty(application.getSolutionName() +'.organization') > -1))
-				vOrganization = application.getUserProperty(application.getSolutionName() +'.organization')
-		
-		}
-		else
-			elements.fld_organization.requestFocus()
-
-		// MA_Variazione : tolta selezione del gruppo di appartenenza in ingresso
-		if(globals.ma_utl_hasModule(globals.Module.AUTORIZZAZIONI))
-		{
-//			elements.lbl_group.visible = true
-//			elements.fld_group.visible = true
-			
-			if(vOrganization)
-			{
-				setGroupValueList(null, vOrganization);
-//				if(application.getUserProperty(application.getSolutionName() +'.group'))
-//					vGroup = application.getUserProperty(application.getSolutionName() +'.group');
-			}
-			else
-				application.setValueListItems('vls_ma_sec_groups', [''], [-1]);
-		}
-		
-		application.setUserProperty(application.getSolutionName() +'.username',vUsername)
-		application.setUserProperty(application.getSolutionName() +'.ownername',vOwner)
-		elements.error.text = null;
-		
-		//for keeping track of logged in users per owner
-		application.addClientInfo(_return.owner_id)
-	}	
-	else	
-	{
-		if(_return.error)
-		{
-			elements.error.text = i18n.getI18NMessage(_return.error)
-		}
-		else
-		{
-			elements.error.text = i18n.getI18NMessage('svy.fr.dlg.loginfailed')
-		}
-	}
-	return;
-}
 
 /**
  * @properties={typeid:24,uuid:"C342E337-EDD9-4215-9F16-CB3C1698EFE0"}
@@ -570,18 +440,19 @@ function onAction$btn_recupera_password(event)
 		{
 			var recUser = fs.getSelectedRecord();
 			
-			// genera la nuova password
-			var newPwd = globals.ma_utl_generatePwd();
-			// salva la nuova password
-			globals.svy_sec_setUserPassword(recUser,newPwd,newPwd);
 			var mailAddress = fs.getSelectedRecord().com_email;
 			if(mailAddress && plugins.mail.isValidEmailAddress(mailAddress))
 			{
+				// genera la nuova password
+				var newPwd = globals.ma_utl_generatePwd();
+				// salva la nuova password
+				globals.svy_sec_setUserPassword(recUser,newPwd,newPwd);
+			
 				var properties = globals.setSparkPostSmtpProperties();
 				var subject = "Presenza Semplice Studio Miazzo - Comunicazione nuova password per accesso all\'applicativo";
 				var userName = recUser.name_first_names && recUser.name_last ? recUser.name_first_names + " " + recUser.name_last : recUser.user_name
 				var msgText = msgText += "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head>";
-				msgText += "plain msg<html><head></head><body>Gentile <b>" + userName;
+				msgText += "<html><head></head><body>Gentile <b>" + userName;
 				msgText += "</b>, <br/>";
 			    msgText += "in seguito alla sua richiesta le comunichiamo la nuova password per l\'accesso all'applicativo. <br/>";
 			    msgText += "La nuova password è la seguente <b><i>: " + newPwd + "</i></b>.<br/><br/>";
@@ -605,13 +476,13 @@ function onAction$btn_recupera_password(event)
 			}
 			else
 			{
-				globals.ma_utl_showWarningDialog('Indirizzo email non valido. Contattare il gestore delle utenze o lo Studio.', 'Recupero password');
+				globals.ma_utl_showWarningDialog('Indirizzo email non valido. Contattare il proprio gestore delle utenze o lo Studio.', 'Recupero password');
 				return;
 			}
 		}
 		else
 		{
-			globals.ma_utl_showWarningDialog('Nessun utente corrispondente. Controllare i dati inseriti per utente e proprietario', 'Recupero password');
+			globals.ma_utl_showWarningDialog('Utente non determinabile. Controllare i dati inseriti per utente e proprietario o contattare il proprio gestore delle utenze, o lo Studio.', 'Recupero password');
 			return;
 		}
 	}
