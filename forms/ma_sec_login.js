@@ -430,7 +430,7 @@ function onAction$btn_recupera_password(event)
 		return;
 	
 	// trova il record di sec_user corrispondente
-	/** @type {JSFoundset<db:/svy_framework/sec_user>}*/
+	/** @type {JSFoundSet<db:/svy_framework/sec_user>}*/
 	var fs = databaseManager.getFoundSet(globals.Server.SVY_FRAMEWORK,'sec_user');
 	if(fs.find())
 	{
