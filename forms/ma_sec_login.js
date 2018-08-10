@@ -271,6 +271,7 @@ function login()
 		
 		application.setUserProperty(application.getSolutionName() +'.username',vUsername)
 		application.setUserProperty(application.getSolutionName() +'.ownername',vOwner)
+		application.setUserProperty(application.getSolutionName() +'.connected','true')
 		elements.error.text = null;
 		
 		//for keeping track of logged in users per owner
