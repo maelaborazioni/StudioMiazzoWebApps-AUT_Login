@@ -61,8 +61,8 @@ function onActionBntLogin(event)
  */
 function process_login()
 {
-	if(application.isInDeveloper())
-		autoLoginDeveloper();
+//	if(application.isInDeveloper())
+//		autoLoginDeveloper();
 	
 	if(globals.is_cas_authenticated)
 		loginWithCAS();
