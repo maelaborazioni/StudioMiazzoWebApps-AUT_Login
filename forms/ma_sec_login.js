@@ -450,7 +450,7 @@ function onAction$btn_recupera_password(event)
 				globals.svy_sec_setUserPassword(recUser,newPwd,newPwd);
 			
 				var properties = globals.setSparkPostSmtpProperties();
-				var subject = "Presenza Semplice Studio Miazzo - Comunicazione nuova password per accesso all\'applicativo";
+				var subject = "Presenza Semplice - Comunicazione nuova password per accesso all\'applicativo";
 				var userName = recUser.name_first_names && recUser.name_last ? recUser.name_first_names + " " + recUser.name_last : recUser.user_name
 				var msgText = msgText += "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head>";
 				msgText += "<html><head></head><body>Gentile <b>" + userName;
@@ -462,7 +462,7 @@ function onAction$btn_recupera_password(event)
 				
 				var success = plugins.mail.sendMail
 				(mailAddress,
-					'Gestore autorizzazioni <assistenza@studiomiazzo.it>',
+					'Gestore autorizzazioni <noreply@peoplegest.it>',
 					subject,
 					msgText,
 					null,
